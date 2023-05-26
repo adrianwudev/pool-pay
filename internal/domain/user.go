@@ -31,14 +31,14 @@ func (s *UserService) GetByEmail(email string) (*User, error) {
 	return s.UserRepo.GetByEmail(email)
 }
 
-func Login(UserId int64, password string) (*User, error) {
-	return &User{}, nil
-}
+// func Login(UserId int64, password string) (*User, error) {
+// 	return &User{}, nil
+// }
 
-func Authorize(UserId int64) (token string) {
-	token = "token"
-	return token
-}
+// func Authorize(UserId int64) (token string) {
+// 	token = "token"
+// 	return token
+// }
 
 // func GetUsers() []User{
 

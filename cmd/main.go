@@ -19,11 +19,12 @@ var myDb *gorm.DB
 func setupRouter() *gin.Engine {
 	router := gin.Default()
 
+	userHandler := handlers.NewUserHandler(myDb)
 	router.GET("/", GreetingHandler)
 	router.POST("/api/v1/user", func(c *gin.Context) {
-		userHandler := handlers.NewUserHandler(myDb)
 		userHandler.AddUserHandler(c)
 	})
+	router.GET("/api/v1/user", userHandler.GetUserHandler)
 
 	return router
 }
@@ -39,7 +40,7 @@ func main() {
 
 	// routers
 	router := setupRouter()
-	err := router.Run()
+	err := router.Run(":8081")
 	if err != nil {
 		log.Fatal(err)
 	}

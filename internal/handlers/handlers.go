@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -47,4 +48,25 @@ func (h *UserHandler) AddUserHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "User added successfully"})
+}
+
+func (h *UserHandler) GetUserHandler(c *gin.Context) {
+	var user *domain.User
+
+	email := c.Query("email")
+
+	userRepo := repository.NewDbUserRepository(h.db)
+	userService := domain.NewUserService(userRepo)
+	user, err := userService.GetByEmail(email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	userJson, err := json.Marshal(user)
+	fmt.Println(userJson)
+	if err != nil {
+		log.Println(err)
+	}
+	c.JSON(http.StatusOK, gin.H{"message": string(userJson)})
 }

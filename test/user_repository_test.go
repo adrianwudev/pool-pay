@@ -28,11 +28,11 @@ func (m *MockUserRepo) CheckIfExists(user domain.User) (bool, error) {
 	return args.Bool(0), args.Error(1)
 }
 
-func TestGetUserByIdAndPassword(t *testing.T) {
-	// 建立偽造的資料庫物件
+func TestGetUserByEmail(t *testing.T) {
+	// Create mock user repo
 	mockRepo := new(MockUserRepo)
 
-	// 在測試前設定期望的回傳值
+	// Expected result
 	expectedUser := &domain.User{
 		Id:       123,
 		Username: "john",
@@ -40,14 +40,16 @@ func TestGetUserByIdAndPassword(t *testing.T) {
 	}
 	mockRepo.On("GetByEmail", "john@example.com").Return(expectedUser, nil)
 
-	// 執行測試
+	// Create user service with mock repo
 	userService := domain.NewUserService(mockRepo)
+
+	// Call GetByEmail method
 	user, err := userService.GetByEmail("john@example.com")
 
-	// 驗證結果是否符合期望
+	// Check if the result matches the expected user
 	assert.NoError(t, err)
 	assert.Equal(t, expectedUser, user)
 
-	// 驗證偽造物件的方法是否被呼叫過
-	mockRepo.AssertExpectations(t)
+	// Verify that GetByEmail method was called with the correct argument
+	mockRepo.AssertCalled(t, "GetByEmail", "john@example.com")
 }
