@@ -3,39 +3,51 @@ package test
 import (
 	"testing"
 
-	"pool-pay/config"
-	"pool-pay/db"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
 	"pool-pay/internal/domain"
-	"pool-pay/internal/repository"
 )
 
+type MockUserRepo struct {
+	mock.Mock
+}
+
+func (m *MockUserRepo) AddUser(username, email, password string) error {
+	args := m.Called(username, email, password)
+	return args.Error(0)
+}
+
+func (m *MockUserRepo) GetByEmail(email string) (*domain.User, error) {
+	args := m.Called(email)
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
+func (m *MockUserRepo) CheckIfExists(user domain.User) (bool, error) {
+	args := m.Called(user)
+	return args.Bool(0), args.Error(1)
+}
+
 func TestGetUserByIdAndPassword(t *testing.T) {
-	config := config.GetConfig()
-	dbInstance, err := db.NewConnection(&config)
-	if err != nil {
-		t.Fatalf("Failed to connect to the database: %v", err)
-	}
+	// 建立偽造的資料庫物件
+	mockRepo := new(MockUserRepo)
 
-	userRepo := repository.NewDbUserRepository(dbInstance)
-
-	user, err := userRepo.GetById(123)
-	if err != nil {
-		t.Fatalf("Failed to get user: %v", err)
-	}
-
-	expectedUser := domain.User{
+	// 在測試前設定期望的回傳值
+	expectedUser := &domain.User{
 		Id:       123,
 		Username: "john",
-		Password: "secret",
 		Email:    "john@example.com",
 	}
+	mockRepo.On("GetByEmail", "john@example.com").Return(expectedUser, nil)
 
-	if user.Id != expectedUser.Id {
-		//||
-		// user.Username != expectedUser.Username ||
-		// user.Password != expectedUser.Password ||
-		// user.Email != expectedUser.Email
+	// 執行測試
+	userService := domain.NewUserService(mockRepo)
+	user, err := userService.GetByEmail("john@example.com")
 
-		t.Errorf("User information mismatch. Expected: %v, Got: %v", expectedUser, user)
-	}
+	// 驗證結果是否符合期望
+	assert.NoError(t, err)
+	assert.Equal(t, expectedUser, user)
+
+	// 驗證偽造物件的方法是否被呼叫過
+	mockRepo.AssertExpectations(t)
 }

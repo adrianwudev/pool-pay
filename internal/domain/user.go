@@ -9,7 +9,7 @@ type User struct {
 
 type UserRepo interface {
 	AddUser(username, email, password string) error
-	GetById(userId int64) (*User, error)
+	GetByEmail(email string) (*User, error)
 	CheckIfExists(user User) (bool, error)
 }
 
@@ -27,6 +27,10 @@ func (s *UserService) AddUser(username, email, password string) error {
 	return s.UserRepo.AddUser(username, email, password)
 }
 
+func (s *UserService) GetByEmail(email string) (*User, error) {
+	return s.UserRepo.GetByEmail(email)
+}
+
 func Login(UserId int64, password string) (*User, error) {
 	return &User{}, nil
 }
@@ -37,9 +41,5 @@ func Authorize(UserId int64) (token string) {
 }
 
 // func GetUsers() []User{
-
-// }
-
-// func GetUserById(UserId string) (User, error) {
 
 // }

@@ -20,13 +20,19 @@ func (db *dbUserRepo) CheckIfExists(user domain.User) (bool, error) {
 	panic("unimplemented")
 }
 
-func (db *dbUserRepo) GetById(userId int64) (*domain.User, error) {
-	return &domain.User{Id: userId, Username: "adrian", Email: "adrian@gmail.com"}, nil
+func (db *dbUserRepo) GetByEmail(email string) (*domain.User, error) {
+	user := domain.User{}
+	err := db.Conn.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (db *dbUserRepo) AddUser(username, email, password string) error {
-	existingUser := &domain.User{}
-	err := db.Conn.Where("email = ?", email).First(existingUser).Error
+	existingUser := domain.User{}
+	err := db.Conn.Where("email = ?", email).First(&existingUser).Error
 	if err == nil {
 		return fmt.Errorf("email already exists")
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
