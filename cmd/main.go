@@ -25,6 +25,7 @@ func setupRouter() *gin.Engine {
 		userHandler.AddUserHandler(c)
 	})
 	router.GET("/api/v1/user", userHandler.GetUserHandler)
+	router.POST("/api/v1/user/login", userHandler.Login)
 
 	return router
 }

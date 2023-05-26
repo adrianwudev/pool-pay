@@ -28,6 +28,12 @@ func (m *MockUserRepo) CheckIfExists(user domain.User) (bool, error) {
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockUserRepo) Login(email, password string) (isLogin bool, err error) {
+	// args := m.Called(user)
+	// return args.Bool(0), args.Error(1)
+	panic("not implemented")
+}
+
 func TestGetUserByEmail(t *testing.T) {
 	// Create mock user repo
 	mockRepo := new(MockUserRepo)
