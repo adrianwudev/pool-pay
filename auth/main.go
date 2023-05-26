@@ -1,25 +1,25 @@
-package main
+package auth
 
 import (
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-// var mySigningKey = os.Get("MY_JWT_KEY")
-var mySigningKey = []byte("my-signing-key")
+var mySigningKey = os.Getenv("MY_JWT_KEY")
 
-func GenerateJWT() (string, error) {
+func GenerateJWT(email string) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
 
 	claims["authorized"] = true
-	claims["user"] = "Adrian"
+	claims["user"] = email
 	claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
 
 	tokenString, err := token.SignedString(mySigningKey)
@@ -40,7 +40,7 @@ func main() {
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
-	validToken, err := GenerateJWT()
+	validToken, err := GenerateJWT("email")
 	if err != nil {
 		fmt.Fprintf(w, err.Error())
 	}
