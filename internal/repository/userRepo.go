@@ -72,7 +72,7 @@ func (db *dbUserRepo) Login(email, password string) (isLogin bool, err error) {
 		return isLogin, fmt.Errorf("email is repeated")
 	}
 
-	// get stored hash
+	// Get stored hash
 	var storedHash string
 	err = db.Conn.Model(&domain.User{}).Select("password").Where("email = ?", email).Scan(&storedHash).Error
 	if err != nil {

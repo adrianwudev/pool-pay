@@ -2,13 +2,10 @@ package domain
 
 import (
 	"log"
-	"pool-pay/auth"
 	"time"
 
+	"pool-pay/internal/auth"
 	redis_client "pool-pay/redis"
-
-	"github.com/dgrijalva/jwt-go"
-	"github.com/redis/go-redis/v9"
 )
 
 type User struct {
@@ -43,37 +40,30 @@ func (s *UserService) GetByEmail(email string) (*User, error) {
 	return s.UserRepo.GetByEmail(email)
 }
 
-func (s *UserService) Login(email, password string, jwtToken *jwt.Token) (token string, err error) {
+func (s *UserService) Login(email, password string) (token string, err error) {
 	client := redis_client.Client
-
-	// Check token
-	tokenSignature, err := client.Get(redis_client.Ctx, jwtToken.Signature).Result()
-	if err != nil {
-		if err != redis.Nil {
-			return tokenSignature, nil
-		} else {
-			return "", err
-		}
-	}
 
 	// Login
 	isLogin, err := s.UserRepo.Login(email, password)
 	if err != nil {
+		log.Println("login failed")
 		return "", err
 	}
-	if isLogin {
-		return "login successful", nil
+	if !isLogin {
+		return "wrong email or password", nil
 	}
 
 	// Generate token
 	validToken, err := auth.GenerateJWT(email)
 	if err != nil {
+		log.Println("generate token failed")
 		log.Println(err)
 	}
 
 	// Write token into Redis
 	err = client.Set(redis_client.Ctx, validToken, 1, time.Second*60).Err()
 	if err != nil {
+		log.Println("set token failed")
 		return "", err
 	}
 

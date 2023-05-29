@@ -16,6 +16,8 @@ type Config struct {
 	SSLMode  string
 }
 
+var MySigningKey = os.Getenv("MY_JWT_KEY")
+
 func GetConfig() Config {
 	err := godotenv.Load("../.env")
 	if err != nil {

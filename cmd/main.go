@@ -8,6 +8,7 @@ import (
 	"pool-pay/config"
 	"pool-pay/db"
 	"pool-pay/internal/handlers"
+	"pool-pay/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -18,20 +19,25 @@ var myDb *gorm.DB
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
+	// middleware group
+	authenticatedGroup := router.Group("/auth", middleware.AuthMiddleware)
 
+	// handlers
 	userHandler := handlers.NewUserHandler(myDb)
+
+	// routes
 	router.GET("/", GreetingHandler)
-	router.POST("/api/v1/user", func(c *gin.Context) {
-		userHandler.AddUserHandler(c)
+	router.POST("/api/v1/user/register", func(c *gin.Context) {
+		userHandler.RegisterHandler(c)
 	})
-	router.GET("/api/v1/user", userHandler.GetUserHandler)
 	router.POST("/api/v1/user/login", userHandler.Login)
+	authenticatedGroup.GET("/api/v1/user", userHandler.GetUserByEmail)
 
 	return router
 }
 
 func main() {
-	fmt.Println("Welcome to paypool")
+	fmt.Println("welcome to paypool")
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	fmt.Printf("Host: %s, Port: %s, Password: %s, User: %s, DBName: %s, SSLMode: %s\n",
@@ -45,7 +51,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Server started on port 8080")
+	log.Println("server started on port 8080")
 
 }
 

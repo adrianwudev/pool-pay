@@ -1,5 +1,5 @@
 CREATE TABLE users(
-	id SERIAL PRIMARY KEY,
+	user_id SERIAL PRIMARY KEY,
 	username VARCHAR(50) NOT NULL,
 	password TEXT NOT NULL,
 	email VARCHAR(50) NOT NULL UNIQUE
@@ -7,13 +7,14 @@ CREATE TABLE users(
 CREATE INDEX idx_users_email ON users (email);
 CREATE INDEX idx_users_email_password ON users (email, password);
 	
-	
-CREATE TABLE friends (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
-    friend_id INT REFERENCES users(id),
-    status VARCHAR(50),
-    created_at TIMESTAMP DEFAULT current_timestamp,
-    updated_at TIMESTAMPTZ DEFAULT current_timestamp
+
+
+CREATE TABLE friendships (
+    friendship_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    friend_id INT NOT NULL,
+    status VARCHAR(20) NOT NULL, -- send, pending, approved, blacklisted
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_friends_user_id ON friends (user_id);
+CREATE INDEX idx_friendships_user_id ON friendships (user_id);

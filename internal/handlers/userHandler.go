@@ -2,14 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"pool-pay/internal/domain"
 	"pool-pay/internal/repository"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -24,7 +23,7 @@ func NewUserHandler(db *gorm.DB) *UserHandler {
 	}
 }
 
-func (h *UserHandler) AddUserHandler(c *gin.Context) {
+func (h *UserHandler) RegisterHandler(c *gin.Context) {
 	var user domain.User
 
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -38,7 +37,7 @@ func (h *UserHandler) AddUserHandler(c *gin.Context) {
 		log.Println(err)
 	}
 	router := c.FullPath()
-	log.Printf("Received request to add user for router %s. Body: %s\n", router, userJson)
+	log.Printf("received request to add user for router %s. body: %s\n", router, userJson)
 
 	userService := getUserService(h)
 	err = userService.AddUser(user.Username, user.Email, user.Password)
@@ -47,10 +46,10 @@ func (h *UserHandler) AddUserHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User added successfully"})
+	c.JSON(http.StatusCreated, gin.H{"message": "user added successfully"})
 }
 
-func (h *UserHandler) GetUserHandler(c *gin.Context) {
+func (h *UserHandler) GetUserByEmail(c *gin.Context) {
 	var user *domain.User
 
 	email := c.Query("email")
@@ -63,7 +62,7 @@ func (h *UserHandler) GetUserHandler(c *gin.Context) {
 	}
 
 	userJson, err := json.Marshal(user)
-	fmt.Println(userJson)
+	log.Println(userJson)
 	if err != nil {
 		log.Println(err)
 	}
@@ -78,32 +77,31 @@ type LoginRequest struct {
 func (h *UserHandler) Login(c *gin.Context) {
 	var request LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
 	}
-	// if token equals to token from redis, then login successfully
-	//TODO
-	var jwtToken *jwt.Token
-	var mySigningKey string
-	var err error
-	if c.Request.Header["token"] != nil {
-		jwtToken, err := jwt.Parse(r.Header["token"][0], func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("There was an error")
-			}
-			return mySigningKey, nil
-		})
-	}
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if isGotToken(c) {
+		return
 	}
 
 	userService := getUserService(h)
-	token, err := userService.Login(request.Email, request.Password, jwtToken)
+	token, err := userService.Login(request.Email, request.Password)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func isGotToken(c *gin.Context) bool {
+	headerToken := c.Request.Header.Get("token")
+	isEmpty := len(strings.TrimSpace(headerToken)) == 0
+	if !isEmpty {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "already have token"})
+		return true
+	}
+	return false
 }
 
 func getUserService(h *UserHandler) *domain.UserService {
