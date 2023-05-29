@@ -80,7 +80,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		return
 	}
-	if isGotToken(c) {
+	if isTokenExists(c) {
 		return
 	}
 
@@ -94,7 +94,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-func isGotToken(c *gin.Context) bool {
+func isTokenExists(c *gin.Context) bool {
 	headerToken := c.Request.Header.Get("token")
 	isEmpty := len(strings.TrimSpace(headerToken)) == 0
 	if !isEmpty {
