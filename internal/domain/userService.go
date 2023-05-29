@@ -11,7 +11,7 @@ import (
 type User struct {
 	Id       int64  `gorm:"primaryKey" json:"id"`
 	Username string `gorm:"not null" json:"username"`
-	Password string `gorm:"not null" json:"password"`
+	Password string `gorm:"not null" json:"-"`
 	Email    string `gorm:"unique;not null" json:"email"`
 }
 
@@ -69,12 +69,3 @@ func (s *UserService) Login(email, password string) (token string, err error) {
 
 	return validToken, nil
 }
-
-// func Authorize(UserId int64) (token string) {
-// 	token = "token"
-// 	return token
-// }
-
-// func GetUsers() []User{
-
-// }

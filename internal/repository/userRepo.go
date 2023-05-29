@@ -23,7 +23,7 @@ func (db *dbUserRepo) CheckIfExists(user domain.User) (bool, error) {
 
 func (db *dbUserRepo) GetByEmail(email string) (*domain.User, error) {
 	user := domain.User{}
-	err := db.Conn.Where("email = ?", email).First(&user).Error
+	err := db.Conn.Select("id, username, email").Where("email = ?", email).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
