@@ -24,6 +24,7 @@ func setupRouter() *gin.Engine {
 
 	// handlers
 	userHandler := handlers.NewUserHandler(myDb)
+	friendHandler := handlers.NewFriendHandler(myDb)
 
 	// routes
 	router.GET("/", GreetingHandler)
@@ -32,6 +33,7 @@ func setupRouter() *gin.Engine {
 	})
 	router.POST("/api/v1/user/login", userHandler.Login)
 	authenticatedGroup.GET("/api/v1/user", userHandler.GetUserByEmail)
+	authenticatedGroup.POST("/api/v1/friend", friendHandler.AddFriend)
 
 	return router
 }
