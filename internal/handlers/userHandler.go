@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"pool-pay/internal/domain"
-	"pool-pay/internal/repository"
+	"pool-pay/internal/util"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -39,7 +39,7 @@ func (h *UserHandler) RegisterHandler(c *gin.Context) {
 	router := c.FullPath()
 	log.Printf("received request to add user for router %s. body: %s\n", router, userJson)
 
-	userService := getUserService(h)
+	userService := util.GetUserService(h.db)
 	err = userService.AddUser(user.Username, user.Email, user.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -54,7 +54,7 @@ func (h *UserHandler) GetUserByEmail(c *gin.Context) {
 
 	email := c.Query("email")
 
-	userService := getUserService(h)
+	userService := util.GetUserService(h.db)
 	user, err := userService.GetByEmail(email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -84,7 +84,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	userService := getUserService(h)
+	userService := util.GetUserService(h.db)
 	token, err := userService.Login(request.Email, request.Password)
 	if err != nil {
 		log.Println(err)
@@ -102,10 +102,4 @@ func isTokenExists(c *gin.Context) bool {
 		return true
 	}
 	return false
-}
-
-func getUserService(h *UserHandler) *domain.UserService {
-	userRepo := repository.NewDbUserRepository(h.db)
-	userService := domain.NewUserService(userRepo)
-	return userService
 }

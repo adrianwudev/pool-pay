@@ -3,7 +3,6 @@ package middleware
 import (
 	"log"
 	"net/http"
-	"pool-pay/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,10 +16,6 @@ func AuthMiddleware(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-	email := auth.GetEmailFromJWT(headerToken)
-
-	log.Printf("original email in middleware: %s\n", email)
 
 	c.Next()
 }
