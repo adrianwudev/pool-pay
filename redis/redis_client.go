@@ -2,8 +2,10 @@ package redis_client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -28,4 +30,24 @@ func checkRedisConnection(client *redis.Client, ctx context.Context) {
 	}
 
 	fmt.Printf("Redis ping response: %s\n", pong)
+}
+
+func SetIntoRedis(validToken string, email string) error {
+	err := Client.Set(Ctx, validToken, email, time.Second*60).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetFromRedis(key string) (string, error) {
+	val, err := Client.Get(Ctx, key).Result()
+	if err == redis.Nil {
+		return "", errors.New("key not found")
+	} else if err != nil {
+		return "", err
+	}
+
+	return val, nil
 }
