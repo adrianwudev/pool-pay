@@ -29,3 +29,22 @@ This endpoint allows you to register a new user account.
         }
 
         ```
+2. **POST /api/v1/user/login**
+This endpoint allows you to get the token for the authenticated.
+    - Request Body
+        ```JSON
+        {
+            "email": "jose@gmail.com",
+            "password": "password"
+        }
+        ```
+    - Response:
+        ```JSON
+        {
+            "success": true,
+            "message": "login successfully",
+            "data": {
+                "token": "JWT token"
+            }
+        }
+    ```

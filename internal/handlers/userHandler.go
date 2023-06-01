@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
-	"strings"
 
 	"pool-pay/internal/domain"
 	"pool-pay/internal/util"
@@ -80,10 +80,7 @@ type LoginRequest struct {
 func (h *UserHandler) Login(c *gin.Context) {
 	var request LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
-		return
-	}
-	if isTokenExists(c) {
+		c.JSON(http.StatusBadRequest, util.NewErrorResponse(errors.New("invalid request body")))
 		return
 	}
 
@@ -91,18 +88,8 @@ func (h *UserHandler) Login(c *gin.Context) {
 	token, err := userService.Login(request.Email, request.Password)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, util.NewErrorResponse(err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
-}
-
-func isTokenExists(c *gin.Context) bool {
-	headerToken := c.Request.Header.Get("token")
-	isEmpty := len(strings.TrimSpace(headerToken)) == 0
-	if !isEmpty {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "already have token"})
-		return true
-	}
-	return false
+	c.JSON(http.StatusOK, util.NewSuccessResponse("login successfully", map[string]interface{}{"token": token}))
 }
