@@ -24,8 +24,8 @@ This endpoint allows you to register a new user account.
         or
         {
             "success": false,
-            "message": "user added successfully",
-            "data": null,
+            "message": "email already exists",
+            "data": null
         }
 
         ```
