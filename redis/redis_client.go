@@ -51,3 +51,11 @@ func GetFromRedis(key string) (string, error) {
 
 	return val, nil
 }
+
+func RefreshExpiredTime(key string) error {
+	err := Client.Expire(Ctx, key, time.Second*60).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
