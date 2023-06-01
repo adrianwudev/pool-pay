@@ -28,7 +28,8 @@ func (h *UserHandler) RegisterHandler(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&user); err != nil {
 		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response := util.NewErrorResponse(err)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -42,11 +43,13 @@ func (h *UserHandler) RegisterHandler(c *gin.Context) {
 	userService := util.GetUserService(h.db)
 	err = userService.AddUser(user.Username, user.Email, user.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response := util.NewErrorResponse(err)
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "user added successfully"})
+	response := util.NewSuccessResponse("user added successfully", nil)
+	c.JSON(http.StatusCreated, response)
 }
 
 func (h *UserHandler) GetUserByEmail(c *gin.Context) {
