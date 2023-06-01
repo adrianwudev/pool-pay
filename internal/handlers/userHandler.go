@@ -60,16 +60,13 @@ func (h *UserHandler) GetUserByEmail(c *gin.Context) {
 	userService := util.GetUserService(h.db)
 	user, err := userService.GetByEmail(email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response := util.NewErrorResponse(err)
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	userJson, err := json.Marshal(user)
-	log.Println(userJson)
-	if err != nil {
-		log.Println(err)
-	}
-	c.JSON(http.StatusOK, gin.H{"message": string(userJson)})
+	response := util.NewSuccessResponse("get user successfully", user)
+	c.JSON(http.StatusOK, response)
 }
 
 type LoginRequest struct {

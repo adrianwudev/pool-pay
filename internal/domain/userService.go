@@ -2,7 +2,6 @@ package domain
 
 import (
 	"log"
-	"time"
 
 	"pool-pay/internal/auth"
 	redis_client "pool-pay/redis"
@@ -41,8 +40,6 @@ func (s *UserService) GetByEmail(email string) (*User, error) {
 }
 
 func (s *UserService) Login(email, password string) (token string, err error) {
-	client := redis_client.Client
-
 	// Login
 	isLogin, err := s.UserRepo.Login(email, password)
 	if err != nil {
@@ -61,7 +58,7 @@ func (s *UserService) Login(email, password string) (token string, err error) {
 	}
 
 	// Write token into Redis
-	err = client.Set(redis_client.Ctx, validToken, 1, time.Second*60).Err()
+	err = redis_client.SetIntoRedis(validToken, email)
 	if err != nil {
 		log.Println("set token failed")
 		return "", err

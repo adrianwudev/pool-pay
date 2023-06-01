@@ -33,6 +33,7 @@ func AuthMiddleware(c *gin.Context) {
 
 	log.Printf("emailJWT: %s, emailRedis: %s\n", emailJWT, emailRedis)
 
+	// check if email from JWT is identical with token from Redis
 	if emailJWT != emailRedis {
 		response := util.NewErrorResponse(errors.New("token is invalid"))
 		c.JSON(http.StatusUnauthorized, response)

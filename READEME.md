@@ -48,3 +48,21 @@ This endpoint allows you to get the token for the authenticated.
             }
         }
     ```
+3. **GET auth/api/v1/user**
+This endpoint allows you to get the info of the user
+    - Request Header:
+      "token": {token get from /login}
+    - Request Parameters:
+      /user?email={email}
+    - Response:
+        ```JSON
+        {
+            "success": true,
+            "message": "get user successfully",
+            "data": {
+                "id": 4,
+                "username": "adrian",
+                "email": "adrian@gmail.com"
+            }
+        }
+        ```
