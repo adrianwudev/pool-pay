@@ -1,4 +1,4 @@
-package util
+package service
 
 import (
 	"pool-pay/internal/domain"
