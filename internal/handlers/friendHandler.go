@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"pool-pay/internal/auth"
 	"pool-pay/internal/domain"
+	"pool-pay/internal/service"
 	"pool-pay/internal/util"
 
 	"github.com/gin-gonic/gin"
@@ -23,8 +25,7 @@ func NewFriendHandler(db *gorm.DB) *FriendshipHandler {
 
 func (h *FriendshipHandler) AddFriend(c *gin.Context) {
 	// get the user's info
-	headerToken := c.Request.Header.Get("token")
-	myEmail := auth.GetEmailFromJWT(headerToken)
+	myEmail := getMyEmailFromToken(c)
 
 	log.Printf("original email in middleware: %s\n", myEmail)
 	// get friend info from the request body
@@ -33,33 +34,33 @@ func (h *FriendshipHandler) AddFriend(c *gin.Context) {
 	}
 	var requestBody AddFriendRequest
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
-		response := util.NewErrorResponse(err)
+		response := util.NewErrorResponse(err, util.GetApiError(err).Code)
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 	friendEmail := requestBody.FriendEmail
 
 	// get userId by email
-	userService := util.GetUserService(h.db)
+	userService := service.GetUserService(h.db)
 	userId, err := getUserIdByEmail(userService, myEmail)
 	if err != nil {
-		response := util.NewErrorResponse(err)
+		response := util.NewErrorResponse(err, util.GetApiError(err).Code)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	friendId, err := getUserIdByEmail(userService, friendEmail)
 	if err != nil {
-		response := util.NewErrorResponse(err)
+		response := util.NewErrorResponse(err, util.GetApiError(err).Code)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	friendService := util.GetFriendshipService(h.db)
+	friendService := service.GetFriendshipService(h.db)
 	// Add friend request
 	err = friendService.AddFriendRequest(userId, friendId)
 	if err != nil {
-		response := util.NewErrorResponse(err)
+		response := util.NewErrorResponse(err, util.GetApiError(err).Code)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -70,6 +71,12 @@ func (h *FriendshipHandler) AddFriend(c *gin.Context) {
 
 }
 
+func getMyEmailFromToken(c *gin.Context) string {
+	headerToken := c.Request.Header.Get("token")
+	myEmail := auth.GetEmailFromJWT(headerToken)
+	return myEmail
+}
+
 func getUserIdByEmail(userService *domain.UserService, email string) (int64, error) {
 	user, err := userService.GetByEmail(email)
 	if err != nil {
@@ -77,3 +84,21 @@ func getUserIdByEmail(userService *domain.UserService, email string) (int64, err
 	}
 	return user.Id, nil
 }
+
+func (h *FriendshipHandler) GetFriendRequests(c *gin.Context) {
+	// get the user's info
+	myEmail := getMyEmailFromToken(c)
+	// get userId by email
+	userService := service.GetUserService(h.db)
+	userId, err := getUserIdByEmail(userService, myEmail)
+	if err != nil {
+		response := util.NewErrorResponse(err, util.GetApiError(err).Code)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	fmt.Println(userId)
+
+}
+
+//how to return an error code rather than an error message

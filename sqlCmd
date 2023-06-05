@@ -19,6 +19,7 @@ CREATE TABLE friendships (
 );
 CREATE INDEX idx_friendships_user_id ON friendships (user_id);
 
+ALTER TABLE friendships OWNER TO devs;
 -- Add unique constraint
 ALTER TABLE public.friendships
 ADD CONSTRAINT unique_user_friend_combination UNIQUE (user_id, friend_id);
