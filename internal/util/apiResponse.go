@@ -1,23 +1,31 @@
 package util
 
+import "time"
+
 type APIResponse struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+	Success   bool        `json:"success"`
+	Timestamp string      `json:"timestamp" example:"2021-07-29T07:23:47Z"`
+	Message   string      `json:"message"`
+	Data      interface{} `json:"data"`
+	ErrorCode int         `json:"errorCode"`
 }
 
 func NewSuccessResponse(message string, data interface{}) APIResponse {
 	return APIResponse{
-		Success: true,
-		Message: message,
-		Data:    data,
+		Success:   true,
+		Timestamp: time.Now().Format(time.RFC3339),
+		Message:   message,
+		Data:      data,
+		ErrorCode: 0,
 	}
 }
 
-func NewErrorResponse(err error) APIResponse {
+func NewErrorResponse(err error, errCode int) APIResponse {
 	return APIResponse{
-		Success: false,
-		Message: err.Error(),
-		Data:    nil,
+		Success:   false,
+		Timestamp: time.Now().Format(time.RFC3339),
+		Message:   err.Error(),
+		Data:      nil,
+		ErrorCode: errCode,
 	}
 }
