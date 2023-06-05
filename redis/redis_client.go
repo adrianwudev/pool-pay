@@ -33,7 +33,7 @@ func checkRedisConnection(client *redis.Client, ctx context.Context) {
 }
 
 func SetIntoRedis(validToken string, email string) error {
-	err := Client.Set(Ctx, validToken, email, time.Second*60).Err()
+	err := Client.Set(Ctx, validToken, email, time.Minute*60).Err()
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func GetFromRedis(key string) (string, error) {
 }
 
 func RefreshExpiredTime(key string) error {
-	err := Client.Expire(Ctx, key, time.Second*60).Err()
+	err := Client.Expire(Ctx, key, time.Minute*60).Err()
 	if err != nil {
 		return err
 	}

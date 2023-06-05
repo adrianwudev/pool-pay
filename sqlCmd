@@ -18,3 +18,7 @@ CREATE TABLE friendships (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_friendships_user_id ON friendships (user_id);
+
+-- Add unique constraint
+ALTER TABLE public.friendships
+ADD CONSTRAINT unique_user_friend_combination UNIQUE (user_id, friend_id);

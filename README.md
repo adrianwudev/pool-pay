@@ -66,3 +66,22 @@ This endpoint allows you to get the info of the user
             }
         }
         ```
+
+4. **POST auth/api/v1/friend**
+This endpoint allows you to send a friend request
+    - Request Header:
+        "token": {token get from /login}
+    - Request Body:
+        ```JSON
+        {
+            "friendEmail": "jose@gmail.com"
+        }
+        ```
+    - Response:
+        ```JSON
+        {
+            "success": true,
+            "message": "add friend request successfully",
+            "data": null
+        }
+        ```
