@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"errors"
 	"log"
 	"net/http"
 	"pool-pay/internal/auth"
+	"pool-pay/internal/constants"
 	"pool-pay/internal/util"
 	redis_client "pool-pay/redis"
 
@@ -16,13 +16,16 @@ func AuthMiddleware(c *gin.Context) {
 
 	headerToken := c.Request.Header.Get("token")
 	if headerToken == "" {
-		abortWhenError(errors.New("token is required"), c)
+		abortWhenError(util.SetApiError(constants.ERRORCODE_TOKENISREQUIRED), c)
 		return
 	}
 	// token is existed in Redis or not
 	emailJWT := auth.GetEmailFromJWT(headerToken)
 	emailRedis, err := redis_client.GetFromRedis(headerToken)
 	if err != nil {
+		if err.(*util.ApiError).Code == constants.ERRORCODE_KEYNOTFOUND {
+			err = util.SetApiError(constants.ERRORCODE_TOKENISEXPIRED)
+		}
 		abortWhenError(err, c)
 		return
 	}
@@ -31,7 +34,7 @@ func AuthMiddleware(c *gin.Context) {
 
 	// check if email from JWT is identical with token from Redis
 	if emailJWT != emailRedis {
-		abortWhenError(errors.New("token is invalid"), c)
+		abortWhenError(util.SetApiError(constants.ERRORCODE_TOKENISINVALID), c)
 		return
 	}
 
@@ -50,7 +53,7 @@ func AdminMiddleware(c *gin.Context) {
 }
 
 func abortWhenError(err error, c *gin.Context) {
-	response := util.NewErrorResponse(err)
+	response := util.NewErrorResponse(err, util.GetApiError(err).Code)
 	c.JSON(http.StatusUnauthorized, response)
 	c.Abort()
 }

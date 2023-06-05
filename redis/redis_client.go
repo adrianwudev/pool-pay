@@ -2,9 +2,9 @@ package redis_client
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
+	"pool-pay/internal/constants"
+	"pool-pay/internal/util"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -29,7 +29,7 @@ func checkRedisConnection(client *redis.Client, ctx context.Context) {
 		log.Printf("failed to ping Redis: %s\n", err)
 	}
 
-	fmt.Printf("Redis ping response: %s\n", pong)
+	log.Printf("Redis ping response: %s\n", pong)
 }
 
 func SetIntoRedis(validToken string, email string) error {
@@ -43,10 +43,13 @@ func SetIntoRedis(validToken string, email string) error {
 
 func GetFromRedis(key string) (string, error) {
 	val, err := Client.Get(Ctx, key).Result()
-	if err == redis.Nil {
-		return "", errors.New("key not found")
-	} else if err != nil {
-		return "", err
+	if err != nil {
+		log.Println(err)
+
+		if err == redis.Nil {
+			return "", util.SetApiError(constants.ERRORCODE_KEYNOTFOUND)
+		}
+		return "", util.SetDefaultApiError(err)
 	}
 
 	return val, nil
