@@ -20,6 +20,9 @@ func (Friendship) TableName() string {
 type FriendshipRepo interface {
 	AddFriendRequest(userId, FriendId int64) error
 	GetFriendRequests(userId int64) ([]Friendship, error)
+	GetFriendshipByID(friendshipId int64) (*Friendship, error)
+	GetFriendshipIdsByUserIds(userId, friendshipId int64) ([]int64, error)
+	UpdateFriendShipStatus(friendshipIds []int64) error
 }
 
 type FriendshipService struct {
@@ -38,4 +41,25 @@ func (s *FriendshipService) AddFriendRequest(userId, friendId int64) error {
 
 func (s *FriendshipService) GetFriendRequests(userId int64) ([]Friendship, error) {
 	return s.FriendshipRepo.GetFriendRequests(userId)
+}
+
+func (s *FriendshipService) ApproveRequest(friendshipId int64) error {
+	// get userId and friendId by friendshipId
+	friendship, err := s.FriendshipRepo.GetFriendshipByID(friendshipId)
+	if err != nil {
+		return err
+	}
+
+	// get both directions of friendship by userId + friendId
+	friendshipIds, err := s.FriendshipRepo.GetFriendshipIdsByUserIds(friendship.UserID, friendship.FriendID)
+	if err != nil {
+		return err
+	}
+
+	err = s.FriendshipRepo.UpdateFriendShipStatus(friendshipIds)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
