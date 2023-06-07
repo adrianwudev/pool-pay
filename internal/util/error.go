@@ -3,6 +3,7 @@ package util
 import (
 	"log"
 	"pool-pay/internal/constants"
+	"runtime/debug"
 )
 
 type ApiError struct {
@@ -22,6 +23,8 @@ func SetApiError(code int) *ApiError {
 }
 
 func SetDefaultApiError(err error) *ApiError {
+	log.Println(err)
+	log.Println(string(debug.Stack()))
 	return &ApiError{
 		Code:    constants.ERRORCODE_OTHERS,
 		Message: err.Error(),
