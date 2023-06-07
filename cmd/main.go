@@ -35,7 +35,8 @@ func setupRouter() *gin.Engine {
 	router.POST("/api/v1/user/login", userHandler.Login)
 	authenticatedGroup.GET("/api/v1/user", userHandler.GetUserByEmail)
 	authenticatedGroup.POST("/api/v1/friend", friendHandler.AddFriend)
-	authenticatedGroup.GET("/api/v1/friend/requests", friendHandler.GetFriendRequests)
+	authenticatedGroup.GET("/api/v1/friend/request", friendHandler.GetFriendRequests)
+	authenticatedGroup.POST("/api/v1/friend/request", friendHandler.ApproveRequest)
 
 	return router
 }

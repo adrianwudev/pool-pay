@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"pool-pay/internal/auth"
+	"pool-pay/internal/constants"
 	"pool-pay/internal/domain"
 	"pool-pay/internal/service"
 	"pool-pay/internal/util"
@@ -108,4 +109,33 @@ func (h *FriendshipHandler) GetFriendRequests(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-//how to return an error code rather than an error message
+func (h *FriendshipHandler) ApproveRequest(c *gin.Context) {
+	// get friendshipId from the request body
+	var friendshipId int64
+	var requestBody map[string]interface{}
+	if err := c.BindJSON(&requestBody); err != nil {
+		response := util.NewErrorResponse(err, util.GetApiError(err).Code)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	friendshipIdFloat, ok := requestBody["friendshipId"].(float64)
+	if !ok {
+		err := util.SetApiError(constants.ERRORCODE_KEYNOTFOUND)
+		response := util.NewErrorResponse(err, util.GetApiError(err).Code)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	friendshipId = int64(friendshipIdFloat)
+
+	friendService := service.GetFriendshipService(h.db)
+	err := friendService.ApproveRequest(friendshipId)
+	if err != nil {
+		response := util.NewErrorResponse(err, util.GetApiError(err).Code)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := util.NewSuccessResponse("approve friend request successfully", nil)
+	c.JSON(http.StatusOK, response)
+}

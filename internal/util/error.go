@@ -32,6 +32,8 @@ func SetDefaultApiError(err error) *ApiError {
 }
 
 func GetApiError(err error) *ApiError {
+	log.Println(err)
+	log.Println(string(debug.Stack()))
 	if err != nil {
 		if apiErr, ok := err.(*ApiError); ok {
 			return apiErr
