@@ -19,6 +19,7 @@ var myDb *gorm.DB
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
+	router.SetTrustedProxies([]string{"127.0.0.1"})
 	// middleware group
 	authenticatedGroup := router.Group("/auth", middleware.AuthMiddleware)
 
@@ -34,7 +35,7 @@ func setupRouter() *gin.Engine {
 	router.POST("/api/v1/user/login", userHandler.Login)
 	authenticatedGroup.GET("/api/v1/user", userHandler.GetUserByEmail)
 	authenticatedGroup.POST("/api/v1/friend", friendHandler.AddFriend)
-	authenticatedGroup.POST("/api/v1/friend/requests", friendHandler.GetFriendRequests)
+	authenticatedGroup.GET("/api/v1/friend/requests", friendHandler.GetFriendRequests)
 
 	return router
 }

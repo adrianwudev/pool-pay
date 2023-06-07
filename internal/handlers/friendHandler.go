@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"pool-pay/internal/auth"
@@ -97,8 +96,16 @@ func (h *FriendshipHandler) GetFriendRequests(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(userId)
+	friendService := service.GetFriendshipService(h.db)
+	friendRequests, err := friendService.GetFriendRequests(userId)
+	if err != nil {
+		response := util.NewErrorResponse(err, util.GetApiError(err).Code)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
 
+	response := util.NewSuccessResponse("", friendRequests)
+	c.JSON(http.StatusOK, response)
 }
 
 //how to return an error code rather than an error message

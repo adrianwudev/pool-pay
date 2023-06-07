@@ -62,3 +62,13 @@ func (db *dbFriendShipRepo) AddFriendRequest(userId, friendId int64) error {
 	tx.Commit()
 	return nil
 }
+
+func (db *dbFriendShipRepo) GetFriendRequests(userId int64) ([]domain.Friendship, error) {
+	var friendRequests []domain.Friendship
+	err := db.Conn.Where("user_id = ? AND status = ?", userId, constants.FriendShipStatusPending).Find(&friendRequests).Error
+	if err != nil {
+		return nil, util.SetDefaultApiError(err)
+	}
+
+	return friendRequests, nil
+}

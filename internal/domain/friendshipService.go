@@ -19,6 +19,7 @@ func (Friendship) TableName() string {
 
 type FriendshipRepo interface {
 	AddFriendRequest(userId, FriendId int64) error
+	GetFriendRequests(userId int64) ([]Friendship, error)
 }
 
 type FriendshipService struct {
@@ -33,4 +34,8 @@ func NewFriendService(friendShipRepo FriendshipRepo) *FriendshipService {
 
 func (s *FriendshipService) AddFriendRequest(userId, friendId int64) error {
 	return s.FriendshipRepo.AddFriendRequest(userId, friendId)
+}
+
+func (s *FriendshipService) GetFriendRequests(userId int64) ([]Friendship, error) {
+	return s.FriendshipRepo.GetFriendRequests(userId)
 }
