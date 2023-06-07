@@ -54,7 +54,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("server started on port 8080")
+	log.Println("server started on port 8081")
 
 }
 

@@ -33,7 +33,7 @@ func GetApiError(err error) *ApiError {
 		if apiErr, ok := err.(*ApiError); ok {
 			return apiErr
 		} else {
-			log.Fatalf("error can't convert to ApiError: %s\n", err)
+			log.Printf("error can't convert to ApiError: %s\n", err)
 			return nil
 		}
 	}

@@ -2,8 +2,10 @@ package repository
 
 import (
 	"errors"
-	"fmt"
+	"log"
+	"pool-pay/internal/constants"
 	"pool-pay/internal/domain"
+	"pool-pay/internal/util"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -25,7 +27,8 @@ func (db *dbUserRepo) GetByEmail(email string) (*domain.User, error) {
 	user := domain.User{}
 	err := db.Conn.Select("id, username, email").Where("email = ?", email).First(&user).Error
 	if err != nil {
-		return nil, err
+		log.Println(err)
+		return nil, util.SetDefaultApiError(err)
 	}
 
 	return &user, nil
@@ -35,15 +38,18 @@ func (db *dbUserRepo) AddUser(username, email, password string) error {
 	existingUser := domain.User{}
 	err := db.Conn.Where("email = ?", email).First(&existingUser).Error
 	if err == nil {
-		return fmt.Errorf("email already exists")
+		log.Println(err)
+		return util.SetApiError(constants.ERRORCODE_EMAILALREADYEXISTS)
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return err
+		log.Println(err)
+		return util.SetDefaultApiError(err)
 	}
 
 	// Hash the password
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
-		return err
+		log.Println(err)
+		return util.SetDefaultApiError(err)
 	}
 
 	user := &domain.User{
@@ -54,7 +60,8 @@ func (db *dbUserRepo) AddUser(username, email, password string) error {
 
 	err = db.Conn.Create(user).Error
 	if err != nil {
-		return err
+		log.Println(err)
+		return util.SetDefaultApiError(err)
 	}
 
 	return nil
@@ -66,10 +73,12 @@ func (db *dbUserRepo) Login(email, password string) (isLogin bool, err error) {
 	// Check email is repeated
 	isEmailRepeated, err := isEmailRepeated(email, db)
 	if err != nil {
-		return isLogin, err
+		log.Println(err)
+		return isLogin, util.SetDefaultApiError(err)
 	}
 	if isEmailRepeated {
-		return isLogin, fmt.Errorf("email is repeated")
+		log.Println(errors.New("email is repeated"))
+		return isLogin, util.SetApiError(constants.ERRORCODE_INVALIDEMAIL)
 	}
 
 	// Get stored hash
@@ -77,9 +86,9 @@ func (db *dbUserRepo) Login(email, password string) (isLogin bool, err error) {
 	err = db.Conn.Model(&domain.User{}).Select("password").Where("email = ?", email).Scan(&storedHash).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return isLogin, fmt.Errorf("invalid email")
+			return isLogin, util.SetApiError(constants.ERRORCODE_INVALIDEMAIL)
 		}
-		return isLogin, err
+		return isLogin, util.SetDefaultApiError(err)
 	}
 
 	// Check if the user exists in the DB
@@ -96,10 +105,10 @@ func (db *dbUserRepo) Login(email, password string) (isLogin bool, err error) {
 func hashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return "", util.SetDefaultApiError(err)
 	}
 
-	return string(hashedPassword), err
+	return string(hashedPassword), util.SetDefaultApiError(err)
 }
 
 func comparePasswordHash(password, storedHash string) bool {
@@ -112,11 +121,12 @@ func isEmailRepeated(email string, db *dbUserRepo) (isRepeated bool, err error) 
 	isRepeated = false
 	err = db.Conn.Model(&domain.User{}).Where("email = ?", email).Count(&count).Error
 	if err != nil {
-		return isRepeated, err
+		return isRepeated, util.SetDefaultApiError(err)
 	}
 	if count > 1 {
 		isRepeated = true
-		return isRepeated, fmt.Errorf("repeated email exists")
+		log.Println(errors.New("repeated email exists"))
+		return isRepeated, util.SetApiError(constants.ERRORCODE_INVALIDEMAIL)
 	}
 
 	return isRepeated, nil

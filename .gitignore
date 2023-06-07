@@ -16,3 +16,6 @@
 
 # Dependency directories
 vendor/
+
+# Example
+example/
